@@ -50,6 +50,7 @@
 #include <test.h>
 #include <version.h>
 #include "autoconf.h"  // for pseudoconfig
+#include <file.h>
 
 
 /*
@@ -139,6 +140,9 @@ boot(void)
 	 */
 	COMPILE_ASSERT(sizeof(userptr_t) == sizeof(char *));
 	COMPILE_ASSERT(sizeof(*(userptr_t)0) == sizeof(char));
+
+    // initialize the open file table
+    oft_initialize();
 }
 
 /*
@@ -150,6 +154,9 @@ shutdown(void)
 {
 
 	kprintf("Shutting down.\n");
+    
+    // destroy the open file table
+    oft_destroy();
 
 	vfs_clearbootfs();
 	vfs_clearcurdir();

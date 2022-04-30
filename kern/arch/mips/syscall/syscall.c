@@ -35,6 +35,9 @@
 #include <thread.h>
 #include <current.h>
 #include <syscall.h>
+#include <file.h>
+#include <copyinout.h>
+#include <endian.h>
 
 
 /*
@@ -115,6 +118,49 @@ syscall(struct trapframe *tf)
                 panic("Can't continue further until sys_exit() is implemented");
 
 	    /* Add stuff here */
+	    case SYS_open:
+		err = sys_open((userptr_t)tf->tf_a0, tf->tf_a1, tf->tf_a2, &retval);
+		break;
+
+	    case SYS_close:
+		err = sys_close(tf->tf_a0);
+		break;
+
+        case SYS_read:
+		err = sys_read(tf->tf_a0, (userptr_t)tf->tf_a1, tf->tf_a2, &retval);
+		break;
+
+		case SYS_write:
+		err = sys_write(tf->tf_a0, (userptr_t)tf->tf_a1, tf->tf_a2, &retval);
+		break;
+
+		case SYS_lseek: {
+
+			uint64_t offset;
+			int whence;
+			off_t retval64;
+
+            // combine a2 and a3 to 64-bits offset
+			join32to64(tf->tf_a2, tf->tf_a3, &offset);
+
+			err = copyin((userptr_t)tf->tf_sp + 16, &whence, sizeof(int));
+			if (err) {
+				break;
+			}
+
+			err = sys_lseek(tf->tf_a0, offset, whence, &retval64);
+			if (err) {
+				break;
+			}
+            // split 64-bits retval64 to 32-bits v0 and v1
+			split64to32(retval64, &tf->tf_v0, &tf->tf_v1);
+			retval = tf->tf_v0;
+		}
+		break;
+
+	    case SYS_dup2:
+		err = sys_dup2(tf->tf_a0 ,tf->tf_a1, &retval);
+		break;
 
 	    default:
 		kprintf("Unknown syscall %d\n", callno);

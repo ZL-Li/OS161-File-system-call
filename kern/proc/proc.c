@@ -48,6 +48,7 @@
 #include <current.h>
 #include <addrspace.h>
 #include <vnode.h>
+#include <file.h>
 
 /*
  * The process for the kernel; this holds all the kernel-only threads.
@@ -104,6 +105,11 @@ proc_destroy(struct proc *proc)
 
 	KASSERT(proc != NULL);
 	KASSERT(proc != kproc);
+
+    // destroy the fd_table of the current process
+    if (proc->fd_table) {
+        fdt_destroy(proc);
+    }
 
 	/*
 	 * We don't take p_lock in here because we must have the only

@@ -49,4 +49,8 @@
 #define OPEN_MAX        __OPEN_MAX
 #define IOV_MAX         __IOV_MAX
 
+// OPEN_MAX is max open files per process
+// GLOBAL_OPEN_MAX is max open files globally
+#define GLOBAL_OPEN_MAX 128
+
 #endif /* _LIMITS_H_ */
